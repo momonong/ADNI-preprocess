@@ -3,10 +3,10 @@ import pandas as pd
 from collections import Counter
 
 # === 參數設定 ===
-FILE_DATE = "20250507"
+FILE_NAME = "20250508_ge"
 
 # === 路徑設定 ===
-csv_subjects_path = os.path.join("meta", f"{FILE_DATE}.csv")
+csv_subjects_path = os.path.join("meta", f"{FILE_NAME}.csv")
 xlsx_reference_path = os.path.join("docs", "matching_data.xlsx")
 
 # === 讀取資料 ===
