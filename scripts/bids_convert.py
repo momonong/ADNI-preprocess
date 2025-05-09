@@ -31,18 +31,36 @@ def find_deepest_dicom_dirs(subject_path):
             continue
 
         # 下層日期資料夾
-        date_dirs = os.listdir(modality_path)
+        date_dirs = [
+            d for d in os.listdir(modality_path)
+            if os.path.isdir(os.path.join(modality_path, d)) and not d.startswith('.')
+        ]
         if len(date_dirs) != 1:
-            print(f"⚠️ {modality_path} 下日期資料夾數量不為 1，跳過")
+            print(f"⚠️ {modality_path} 下日期資料夾數量不為 1（實際為 {len(date_dirs)}），跳過")
             continue
+
         date_path = os.path.join(modality_path, date_dirs[0])
 
-        # 最底層 dicom 資料夾
-        dicom_dirs = os.listdir(date_path)
-        if len(dicom_dirs) != 1:
-            print(f"⚠️ {date_path} 下 DICOM 資料夾數量不為 1，跳過")
+        # 取得 date_path 下的子資料夾（排除隱藏檔）
+        subdirs = [
+            d for d in os.listdir(date_path)
+            if os.path.isdir(os.path.join(date_path, d)) and not d.startswith(".")
+        ]
+
+        # 如果找不到子資料夾，就檢查是否 .dcm 檔案直接放在 date_path 中
+        if len(subdirs) == 0:
+            has_dcm = any(f.lower().endswith(".dcm") for f in os.listdir(date_path))
+            if has_dcm:
+                dicom_path = date_path  # DICOM 直接在這層
+            else:
+                print(f"⚠️ {date_path} 沒有 DICOM 檔案或資料夾，跳過")
+                continue
+        elif len(subdirs) == 1:
+            dicom_path = os.path.join(date_path, subdirs[0])  # 有包一層資料夾
+        else:
+            print(f"⚠️ {date_path} 下 DICOM 資料夾數量不為 1（實際為 {len(subdirs)}），跳過")
             continue
-        dicom_path = os.path.join(date_path, dicom_dirs[0])
+
 
         if is_anatomical_modality(modality_folder):
             anat_dir = dicom_path
@@ -54,7 +72,7 @@ def find_deepest_dicom_dirs(subject_path):
 def run_dcm2niix(dicom_dir, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     result = subprocess.run(
-        ["dcm2niix", "-z", "y", "-o", output_dir, dicom_dir],
+        ["dcm2niix", "-z", "y", "-i", "y", "-m", "n", "-o", output_dir, dicom_dir],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
