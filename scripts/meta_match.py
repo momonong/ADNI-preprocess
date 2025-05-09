@@ -3,14 +3,14 @@ import pandas as pd
 from collections import Counter
 
 # === 參數設定 ===
-FILE_NAME = "20250508_ge"
+FILE_NAME = "20250509_philips"
 
 # === 路徑設定 ===
-csv_subjects_path = os.path.join("meta", f"{FILE_NAME}.csv")
-xlsx_reference_path = os.path.join("docs", "matching_data.xlsx")
+csv_subjects_path = os.path.join("docs", "fMRI_matched_20240624_afterchecked_final.xlsx")
+xlsx_reference_path = os.path.join("docs", "AD_Phillips.xlsx")
 
 # === 讀取資料 ===
-df_csv = pd.read_csv(csv_subjects_path)
+df_csv = pd.read_excel(csv_subjects_path, sheet_name="AD")
 df_xlsx = pd.read_excel(xlsx_reference_path)
 
 csv_subjects = df_csv["Subject"].dropna().astype(str).tolist()
